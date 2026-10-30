@@ -1,0 +1,78 @@
+{
+  "name": "CursorBench 4.0",
+  "source": "https://cursor.com/cursorbench",
+  "checked": "2026-10-30",
+  "note": "Cursor's own benchmark (vendor source, not independent). cost_per_task applies published per-token prices. Small score gaps may be noise.",
+  "rows": [
+    {
+      "model": "Opus 5.5 Max",
+      "score": 57.8,
+      "cost_per_task": 13.43,
+      "tokens_per_task": 218363,
+      "steps": 185
+    },
+    {
+      "model": "Opus 5.5 High",
+      "score": 56.0,
+      "cost_per_task": 3.97,
+      "tokens_per_task": 53078,
+      "steps": 68
+    },
+    {
+      "model": "Sonnet 5.5 High",
+      "score": 47.8,
+      "cost_per_task": 1.2,
+      "tokens_per_task": 37391,
+      "steps": 41
+    },
+    {
+      "model": "DeepSeek V4.1 Flash 1017 Medium",
+      "score": 46.3,
+      "cost_per_task": 0.8,
+      "tokens_per_task": 398255,
+      "steps": 189
+    },
+    {
+      "model": "Grok 4.7 High",
+      "score": 43.9,
+      "cost_per_task": 4.69,
+      "tokens_per_task": 56382,
+      "steps": 71
+    },
+    {
+      "model": "Haiku 5.5 High",
+      "score": 42.3,
+      "cost_per_task": 0.32,
+      "tokens_per_task": 77057,
+      "steps": 59
+    },
+    {
+      "model": "Haiku 5.5 Medium",
+      "score": 36.9,
+      "cost_per_task": 0.17,
+      "tokens_per_task": 42659,
+      "steps": 39
+    },
+    {
+      "model": "GLM 5.3 Flash Max",
+      "score": 36.8,
+      "cost_per_task": 0.39,
+      "tokens_per_task": 56410,
+      "steps": 118
+    },
+    {
+      "model": "GPT-5.6 Luna Max",
+      "score": 35.9,
+      "cost_per_task": 1.03,
+      "tokens_per_task": 87284,
+      "steps": 208
+    },
+    {
+      "model": "Composer 2.5",
+      "score": 27.7,
+      "cost_per_task": 0.68,
+      "tokens_per_task": 17347,
+      "steps": 41
+    }
+  ]
+}

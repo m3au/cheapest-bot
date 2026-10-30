@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cheapest Bot</title>
+<meta name="description" content="Open-source, non-profit picker for the best value-per-money model in Cursor, with the launch params it needs.">
+<style>
+:root{--bg:#0d0f12;--card:#15181d;--line:#262a31;--text:#e6e8eb;--muted:#8b929c;--accent:#6aa7ff;--ok:#5fcf8f;--warn:#e7b45a;--bad:#ff7a7a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:24px 16px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:16px;margin:24px 0 8px}.sub{color:var(--muted);margin:0 0 20px}
+.note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.note.trap{border-color:var(--bad)}code,pre{background:#0a0c0f;border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+pre{padding:10px;overflow-x:auto}
+.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--line)}
+.pill.allowance{color:var(--ok);border-color:var(--ok)}.pill.credit{color:var(--warn);border-color:var(--warn)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+input,select{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:820px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--card);cursor:pointer;user-select:none;font-weight:600;white-space:nowrap}
+td.num{text-align:right;font-variant-numeric:tabular-nums}td.notes{color:var(--muted);font-size:13px;max-width:360px}
+a{color:var(--accent)}footer{color:var(--muted);font-size:12px;margin-top:20px}
+</style></head>
+<body><main>
+<h1>Cheapest Bot</h1>
+<p class="sub">Which model gives the most for the money in Cursor right now, and how to launch it without getting billed for the fast variant. Open source, non-profit, nobody earns anything from it.</p>
+
+<div class="note trap"><b>The trap.</b> Launch <code>composer-2.5</code> with only the model id and Cursor bills it as <b>composer-2.5-fast</b>: $3 in / $15 out per million tokens instead of $0.50 / $2.50. That's 6x on output.
+<a href="https://forum.cursor.com/t/sdk-reports-composer-2-5-but-usage-dashboard-bills-composer-2-5-fast/163046/7" rel="noopener noreferrer">Confirmed by Cursor staff</a>.
+Fix: pass <code>fast=false</code>. And always name the model: an unset model falls back to the default, which may be a pricey one.</div>
+<div class="note">Cursor's own models (Composer, Grok) come out of the plan's included allowance. Every other model bills credit at API list price from the first request.</div>
+
+<h2>Ask it</h2>
+<pre>GET api/cheapest?task=short|long|code&amp;max_input_k=N[&amp;billing=any|allowance]
+GET api/models
+GET api/benchmark</pre>
+<div class="bar"><select id="task"><option>short</option><option>code</option><option>long</option></select>
+<input id="mik" type="number" min="0" max="10000" placeholder="max input (k tokens)">
+<select id="billing"><option value="any">any billing</option><option value="allowance">allowance only</option></select></div>
+<pre id="answer">…</pre>
+
+<h2>Prices</h2>
+<p class="sub" id="checked">Loading…</p>
+<div class="bar"><input id="q" placeholder="Filter model or provider" aria-label="Filter">
+<select id="bill" aria-label="Billing"><option value="">All billing</option><option value="allowance">Allowance</option><option value="credit">Credit</option></select></div>
+<div class="wrap"><table><thead><tr>
+<th data-k="name">Model</th><th data-k="provider">Provider</th><th data-k="input_per_m">Input</th><th data-k="output_per_m">Output ▲</th><th data-k="billing">Billing</th><th>Notes</th><th data-k="checked">Checked</th><th>Source</th>
+</tr></thead><tbody id="rows"></tbody></table></div>
+
+<footer>Prices are read by hand from Cursor's public docs, with a date on every row. Quality numbers come from CursorBench, Cursor's own benchmark. Not affiliated with Cursor, Anysphere or xAI. MIT licensed, no trackers, no cookies, no IP logging.</footer>
+</main>
+<script>
+let data={models:[]},sortK="output_per_m",asc=true;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money=v=>v==null?"n/a":"$"+v;
+function render(){
+ const q=$("#q").value.toLowerCase(),b=$("#bill").value;
+ let r=data.models.filter(m=>(!b||m.billing===b)&&(m.name+" "+m.provider).toLowerCase().includes(q));
+ r.sort((x,y)=>{let a=x[sortK],c=y[sortK];if(a==null)return 1;if(c==null)return -1;
+  const d=typeof a==="number"?a-c:String(a).localeCompare(c);return (asc?d:-d)||x.name.localeCompare(y.name)});
+ $("#rows").innerHTML=r.map(m=>`<tr><td>${esc(m.name)}${m.id?` <code>${esc(m.id)}</code>`:""}</td><td>${esc(m.provider)}</td><td class="num">${money(m.input_per_m)}</td><td class="num">${money(m.output_per_m)}</td><td><span class="pill ${esc(m.billing)}">${esc(m.billing)}</span></td><td class="notes">${esc([m.fast_variant_note,m.notes].filter(Boolean).join(" ")||"-")}</td><td>${esc(m.checked)}</td><td><a href="${esc(m.source)}" rel="noopener noreferrer">docs</a></td></tr>`).join("");
+ document.querySelectorAll("th[data-k]").forEach(th=>{th.textContent=th.textContent.replace(/ [▲▼]$/,"");if(th.dataset.k===sortK)th.textContent+=asc?" ▲":" ▼"});
+}
+function ask(){
+ const p=new URLSearchParams({task:$("#task").value,billing:$("#billing").value});
+ if($("#mik").value!=="")p.set("max_input_k",$("#mik").value);
+ fetch("api/cheapest?"+p).then(r=>r.json()).then(j=>{$("#answer").textContent=JSON.stringify(j,null,2)}).catch(()=>{$("#answer").textContent="API not reachable."});
+}
+fetch("api/models").then(r=>r.json()).then(j=>{data=j;$("#checked").textContent=`${j.units}. Last checked ${j.checked}.`;render()})
+ .catch(()=>{$("#checked").textContent="Could not load api/models."});
+document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;asc=k===sortK?!asc:true;sortK=k;render()});
+$("#q").oninput=render;$("#bill").onchange=render;["#task","#mik","#billing"].forEach(s=>$(s).oninput=ask);ask();
+</script></body></html>
