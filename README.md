@@ -4,7 +4,7 @@ A tiny, read-only service that tells you which model gives the most for the mone
 
 **Open source (MIT), non-profit, and nobody earns anything from it.** No ads, no affiliate links, no trackers, no cookies, no IP logging, no accounts.
 
-Live at: <PORTAL_URL>
+Live at: https://webportal.world/cheapest-bot/
 
 ## The trap
 
@@ -51,7 +51,7 @@ GET /                 # human page
 Example:
 
 ```sh
-curl '<PORTAL_URL>/api/cheapest?task=code&max_input_k=40'
+curl 'https://webportal.world/cheapest-bot//api/cheapest?task=code&max_input_k=40'
 ```
 
 ```json
